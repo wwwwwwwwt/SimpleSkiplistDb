@@ -68,128 +68,170 @@ void initServer(Server*& server){
 }
 
 
+std::unordered_map<std::string, bool>mp;
+
+
+
 int start(Client* client){
 
+
     Client * c = client;
-    c->username_ = "ztw";
+    //c->username_ = "ztw";
 
     char szMessage[MSGSIZE];
-
+    int cnt = 1;
     int ret = 0;
     while(true && c->fd_){
-
-        ret = recv(c->fd_, szMessage, MSGSIZE,0);
-        if(ret <= 0){
-            return 0;
-        }
-
-        szMessage[ret] = '\0';
-        string msg(szMessage);
-        
-        Command C(msg);
-
-        C.split_command();
-
-        if(C.arg_[0] == "set"){
-            string key = C.arg_[1];
-            string val = C.arg_[2];
-
-            bool flag = true;
-            auto it = server->commands_.find("set");
-            CommandFun cmd = it->second;
-            cmd(server, c, key,val,flag);
-
-            char _char_arry[] = "OK";
-            char* str = _char_arry;
-            send(c->fd_, str, strlen(str) + sizeof(char),NULL);
-            continue;
-        }
-
-        if(C.arg_[0] == "get"){
-            string key = C.arg_[1];
-            string val = "";
-
-            bool flag = true;
-            auto it = server->commands_.find("get");
-            CommandFun cmd = it->second;
-
-            cmd(server, c, key, val, flag);
-
-            if(flag){
-                char* str = new char[strlen(val.c_str())];
-                strcpy(str, val.c_str());
-                send(c->fd_, str, strlen(str) + sizeof(char),NULL);
-                delete []str;
+        if(cnt == 1){
+            ret = recv(c->fd_, szMessage, MSGSIZE,0);
+            if(ret <= 0){
+                return 0;
             }
+            szMessage[ret] = '\0';
+           
+            string msg(szMessage);
+            if(mp.find(msg) != mp.end() && mp[msg] == false){
+                mp[msg] = true;
+                c->username_ = msg;
+                char _char_arry[] = "login successful!";
+                cout<<c->username_<<" is login"<<endl;
 
-            else{
-                char _char_arry[] = "(NULL)";
+                /*
+                    登陆后自动load
+                */
+                string key = "";
+                string val = "";
+
+                auto it = server->commands_.find("load");
+                CommandFun cmd = it->second;
+                bool flag = true;
+                cmd(server, c, key, val, flag);
+                
                 char* str = _char_arry;
                 send(c->fd_, str, strlen(str) + sizeof(char),NULL);
             }
-            continue;
-        }
-
-        if(C.arg_[0] == "del"){
-            string key = C.arg_[1];
-            string val = "";
-            bool flag = true;
-            auto it = server->commands_.find("del");
-            CommandFun cmd = it->second;
-            cmd(server, c, key, val, flag);
-
-            if(flag){
-                string tempmsg = "del successful";
-                char *str = new char[strlen(tempmsg.c_str()) + 1];
-                strcpy(str, tempmsg.c_str());
-                send(c->fd_, str, strlen(str) + sizeof(char), NULL);
-                delete[]str;
-            }
             else{
-                string tempmsg = "del failed";
-                char *str = new char[strlen(tempmsg.c_str()) + 1];
+                char _char_arry[] = "error";
+                char* str = _char_arry;
+                send(c->fd_, str, strlen(str) + sizeof(char),NULL);
+                break;
+            }
+        }
+        else{
+            ret = recv(c->fd_, szMessage, MSGSIZE,0);
+            if(ret <= 0){
+                return 0;
+            }
+
+            szMessage[ret] = '\0';
+            string msg(szMessage);
+            
+            Command C(msg);
+
+            C.split_command();
+
+            if(C.arg_[0] == "set"){
+                string key = C.arg_[1];
+                string val = C.arg_[2];
+
+                bool flag = true;
+                auto it = server->commands_.find("set");
+                CommandFun cmd = it->second;
+                cmd(server, c, key,val,flag);
+
+                char _char_arry[] = "OK";
+                char* str = _char_arry;
+                send(c->fd_, str, strlen(str) + sizeof(char),NULL);
+                continue;
+            }
+
+            if(C.arg_[0] == "get"){
+                string key = C.arg_[1];
+                string val = "";
+
+                bool flag = true;
+                auto it = server->commands_.find("get");
+                CommandFun cmd = it->second;
+
+                cmd(server, c, key, val, flag);
+
+                if(flag){
+                    char* str = new char[strlen(val.c_str())];
+                    strcpy(str, val.c_str());
+                    send(c->fd_, str, strlen(str) + sizeof(char),NULL);
+                    delete []str;
+                }
+
+                else{
+                    char _char_arry[] = "(NULL)";
+                    char* str = _char_arry;
+                    send(c->fd_, str, strlen(str) + sizeof(char),NULL);
+                }
+                continue;
+            }
+
+            if(C.arg_[0] == "del"){
+                string key = C.arg_[1];
+                string val = "";
+                bool flag = true;
+                auto it = server->commands_.find("del");
+                CommandFun cmd = it->second;
+                cmd(server, c, key, val, flag);
+
+                if(flag){
+                    string tempmsg = "del successful";
+                    char *str = new char[strlen(tempmsg.c_str()) + 1];
+                    strcpy(str, tempmsg.c_str());
+                    send(c->fd_, str, strlen(str) + sizeof(char), NULL);
+                    delete[]str;
+                }
+                else{
+                    string tempmsg = "del failed";
+                    char *str = new char[strlen(tempmsg.c_str()) + 1];
+                    strcpy(str, tempmsg.c_str());
+                    send(c->fd_, str, strlen(str) + sizeof(char), NULL);
+                    delete[]str;
+                }
+                continue;
+                
+            }
+
+            if(C.arg_[0] == "load"){
+                string key = "";
+                string val = "";
+
+                auto it = server->commands_.find("load");
+                CommandFun cmd = it->second;
+                bool flag = true;
+                cmd(server, c, key, val, flag);
+
+                string tempmsg = "load successful";
+                char* str = new char[strlen(tempmsg.c_str()) + 1];
                 strcpy(str, tempmsg.c_str());
                 send(c->fd_, str, strlen(str) + sizeof(char), NULL);
                 delete[]str;
+                continue;
             }
-            continue;
-            
+
+            if(C.arg_[0] == "dump"){
+
+                string key = "";
+                string val = "";
+
+                auto it = server->commands_.find("dump");
+                CommandFun cmd = it->second;
+                bool flag = true;
+                cmd(server, c, key, val, flag);
+
+                string tempmsg = "dump successful";
+                char* str = new char[strlen(tempmsg.c_str()) + 1];
+                strcpy(str, tempmsg.c_str());
+                send(c->fd_, str, strlen(str) + sizeof(char), NULL);
+                delete[]str;
+                continue;
+            }
         }
-
-        if(C.arg_[0] == "load"){
-            string key = "";
-            string val = "";
-
-            auto it = server->commands_.find("load");
-            CommandFun cmd = it->second;
-            bool flag = true;
-            cmd(server, c, key, val, flag);
-
-            string tempmsg = "load successful";
-            char* str = new char[strlen(tempmsg.c_str()) + 1];
-            strcpy(str, tempmsg.c_str());
-            send(c->fd_, str, strlen(str) + sizeof(char), NULL);
-            delete[]str;
-            continue;
-        }
-
-        if(C.arg_[0] == "dump"){
-
-            string key = "";
-            string val = "";
-
-            auto it = server->commands_.find("dump");
-            CommandFun cmd = it->second;
-            bool flag = true;
-            cmd(server, c, key, val, flag);
-
-            string tempmsg = "dump successful";
-            char* str = new char[strlen(tempmsg.c_str()) + 1];
-            strcpy(str, tempmsg.c_str());
-            send(c->fd_, str, strlen(str) + sizeof(char), NULL);
-            delete[]str;
-            continue;
-        }
+        cnt++;
 
     }
     return 0;
@@ -199,9 +241,13 @@ int main(){
 
     initServer(server);
     
+    mp.insert({"ztw",false});
+    mp.insert({"wgl",false});
+
 
     for(int i = 0; i< DBNUM; i++)
     {
+
         Client* client = new Client();
         socklen_t len = sizeof(client->addr_);
         cout<<"next client: "<<i<<endl;
@@ -211,7 +257,10 @@ int main(){
         
         server->DB[i] = &(client->db);
 
-        my_thread t(start,client);
+        //my_thread t(start,client);
+        //a[i] = std::move(my_thread(start, client));
+        thread t(start, client);
+        t.detach();
     }
 
     close(server->listenFD_);

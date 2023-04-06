@@ -2,14 +2,15 @@
  * @Author: zzzzztw
  * @Date: 2023-03-16 14:13:23
  * @LastEditors: Do not edit
- * @LastEditTime: 2023-03-30 16:18:43
- * @FilePath: /cpptest/myskiplistDB/myRedis_server/server.h
+ * @LastEditTime: 2023-04-06 22:03:13
+ * @FilePath: /SimpleSkiplistDB/myRedis_server/include/server.h
  */
 #ifndef SERVER_H
 #define SERVER_H
 #include <iostream>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <sys/types.h>
@@ -36,6 +37,8 @@ const int DBNUM = 16;
 #define PORT 5150 
 using mydb = Skiplist<std::string, std::string>; 
 using CommandFun = void (*) (Server*, Client*, string, string&,bool&);
+
+
 
 
 

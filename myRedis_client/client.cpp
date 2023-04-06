@@ -2,10 +2,11 @@
  * @Author: zzzzztw
  * @Date: 2023-03-30 17:10:32
  * @LastEditors: Do not edit
- * @LastEditTime: 2023-03-30 17:51:04
- * @FilePath: /cpptest/myskiplistDB/myRedis_client/client.cpp
+ * @LastEditTime: 2023-04-06 22:56:30
+ * @FilePath: /SimpleSkiplistDB/myRedis_client/client.cpp
  */
-
+#include <iostream>
+#include <limits>
 #include <stdio.h>
 #include <string.h>
 #include <sys/socket.h>
@@ -38,27 +39,54 @@ int main(){
     connect(clienFd_, (struct sockaddr*)&server_addr, sizeof(server_addr));
 
     cout << "Redis_client by Stack start-up...\n"; 
-
+    int cnt = 1;
     while(true){
-        cout<<"Stack_Redis>";
-        string message;
-        getline(cin,message);
-        strcpy(szMessage,message.c_str());
-        Command C(message);
-        if(!C.is_valid_command()){
-            continue;
+        if(cnt == 1){
+            cout<<"please enter your username>";
+            string message;
+            cin>>message;
+             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            strcpy(szMessage, message.c_str());
+            send(clienFd_, szMessage,strlen(szMessage), NULL);
+            char buffer[1024];
+            
+            memset(buffer, 0, sizeof buffer);
+            if(recv(clienFd_, buffer, 1024,NULL) <= 0){
+                break;
+            }
+            else if(buffer[0] == 'e' && buffer[1] == 'r'){
+                cout<<"username is not register, error"<<endl;
+                break;
+            }
+            else{
+                 cout << "Server reply: " << buffer << endl;
+            }
+            
         }
+        else{
+            cout<<"Stack_Redis>";
+            string message;
+            getline(cin,message);
+            strcpy(szMessage,message.c_str());
+            Command C(message);
+            if(!C.is_valid_command()){
+                continue;
+            }
 
-        send(clienFd_, szMessage,strlen(szMessage), NULL);
+            send(clienFd_, szMessage,strlen(szMessage), NULL);
 
-        char buffer[1024];
-        memset(buffer, 0, sizeof buffer);
+            char buffer[1024];
+            memset(buffer, 0, sizeof buffer);
 
-        if(recv(clienFd_, buffer, 1024,NULL) <= 0){
-            break;
+            if(recv(clienFd_, buffer, 1024,NULL) <= 0){
+                break;
+            }
+
+            cout << "Server reply: " << buffer << endl;
+
         }
+        cnt++;
 
-        cout << "Server reply: " << buffer << endl;
     }
 
     close(clienFd_);
