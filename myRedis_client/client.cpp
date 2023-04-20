@@ -2,8 +2,8 @@
  * @Author: zzzzztw
  * @Date: 2023-03-30 17:10:32
  * @LastEditors: Do not edit
- * @LastEditTime: 2023-04-06 22:56:30
- * @FilePath: /SimpleSkiplistDB/myRedis_client/client.cpp
+ * @LastEditTime: 2023-04-07 09:31:24
+ * @FilePath: /SimpleDb/myRedis_client/client.cpp
  */
 #include <iostream>
 #include <limits>
@@ -45,7 +45,7 @@ int main(){
             cout<<"please enter your username>";
             string message;
             cin>>message;
-             std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+            std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
             strcpy(szMessage, message.c_str());
             send(clienFd_, szMessage,strlen(szMessage), NULL);
             char buffer[1024];

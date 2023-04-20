@@ -2,8 +2,8 @@
  * @Author: zzzzztw
  * @Date: 2023-03-16 13:13:40
  * @LastEditors: Do not edit
- * @LastEditTime: 2023-03-30 15:10:44
- * @FilePath: /cpptest/myskiplistDB/myRedis_server/command.h
+ * @LastEditTime: 2023-04-07 09:27:33
+ * @FilePath: /SimpleDb/myRedis_client/command.h
  */
 
 #ifndef COMMAND_H
@@ -53,7 +53,7 @@ void Command::split_command()
 
     while(getline(ss,order,' ')){
         arg_.push_back(order);
-        std::cout<<order<<std::endl;
+    //    std::cout<<order<<std::endl;
     }
 
 
